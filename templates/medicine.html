@@ -1,0 +1,136 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Add medicine
+{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h2 class="card-title mb-3">Add Medicine</h2>
+                <form action="/admin/medicine" method="POST" onsubmit="checkMedicine(event)">
+                    <input type="hidden" name="action" value="add"></input>
+
+                    <div class="row g-2 align-items-end">
+                        <div class="col-md-5">
+                            <input class="form-control" type="text" id="name" name="name" required placeholder="Medicine Name" autocomplete="off">
+                        </div>
+                        <div class="col-md-4">
+                            <input class="form-control" type="number" id="quantity" name="quantity" required placeholder="Quantity" min="0">
+                        </div>
+                        <div class="col-md-3 d-flex gap-2">
+                            <button type="submit" class="btn btn-light">Add</button>
+                            <button type="reset" class="btn btn-light">Reset</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+
+        <div class="card">
+            <div class="card-body">
+                <h2 class="card-title mb-3">Medicines</h2>
+                <form action="/admin/medicine" method="POST">
+                    <input type="hidden" name="action" value="save_all">
+                    <div class="table-responsive">
+                        <table class="table table-dark table-hover table-striped align-middle">
+                            <thead>
+                                <tr>
+                                    <td>Name</td>
+                                    <td>Monthly Quantity</td>
+                                    <td>Stock</td>
+                                    <td>[+]</td>
+                                    <td>[-]</td>
+                                    <td>Delete</td>
+                                </tr>
+                            </thead>
+                            <tbody id="tableBody">
+                                {% for medicine in medicines %}
+                                    <tr>
+                                        <td>{{ medicine["name"] }}</td>
+                                        <td>{{ medicine["needed"] }}</td>
+                                        <td><span id="qty-{{ medicine['id'] }}">{{ medicine["stock_quantity"] }}</span></td>
+                                        <td><button type="button" onclick="changeQty({{ medicine['id'] }}, 1)" class="btn btn-sm btn-outline-light">+</button></td>
+                                        <td><button type="button" onclick="changeQty({{ medicine['id'] }}, -1)" class="btn btn-sm btn-outline-light">-</button></td>
+                                        <td>
+                                            <input type="hidden" name="medicine_ids[]" value="{{ medicine['id'] }}">
+                                            <input type="hidden" name="quantities[]" id="input-{{ medicine['id'] }}" value="{{ medicine['stock_quantity'] }}">
+                                            <button type="button" onclick="deleteMe({{ medicine['id'] }})" class="btn btn-sm btn-outline-danger">Delete</button>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+
+                    </div>
+                    <button type="submit" class="btn btn-light">Save All</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function checkMedicine(event) {
+            const medicineInput = document.getElementById("name");
+            const medVal = medicineInput.value.trim().toLowerCase();
+
+            const existing = [...document.querySelectorAll("#tableBody td:first-child")]
+                .map(td => td.textContent.trim().toLowerCase());
+
+            if (existing.includes(medVal)) {
+                showErrorToast("This medicine is already exists!")
+                event.preventDefault();
+            }
+        }
+
+        function changeQty(id, delta) {
+            const span = document.getElementById("qty-" + id);
+            const input = document.getElementById("input-" + id);
+            const current = parseInt(span.textContent.trim(),);
+            const newVal = Math.max(0, current + delta);
+
+            span.textContent = newVal;
+            input.value = newVal;
+
+        }
+
+        function deleteMe(id) {
+            const form = document.createElement('form');
+
+            form.method = 'POST';
+            form.action = '/admin/medicine';
+            form.innerHTML = `
+            <input type="hidden" name="action" value="delete">
+            <input type="hidden" name="medicine_id" value="${id}">
+        `;
+
+            document.body.appendChild(form);
+            form.submit();
+        }
+        function showErrorToast(message) {
+            let container = document.querySelector('.toast-container');
+            if(!container) {
+                container = document.createElement('div');
+                container.className = 'toast-container position-fixed bottom-0 end-0 p-3'
+                container.style.zIndex = '9999';
+                document.body.appendChild(container);
+            }
+
+
+            const toastEl = document.createElement('div');
+            toastEl.innerHTML = `
+            <div class="toast align-items-center text-bg-danger border-0" role="alert" aria-live="assertive" aria-atomic="true" data-bs-autohide="true" data-bs-delay="4000">
+                <div class="d-flex">
+                    <div class="toast-body">${message}</div>
+                </div>
+            </div>
+            `;
+
+            const toast = toastEl.firstElementChild;
+            container.appendChild(toast);
+            bootstrap.Toast.getOrCreateInstance(toast).show()
+        }
+    </script>
+{% endblock %}

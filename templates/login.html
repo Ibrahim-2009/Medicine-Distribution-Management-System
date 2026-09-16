@@ -1,0 +1,28 @@
+{% extends "layout.html" %}
+
+{% block title %}
+    Login
+{% endblock %}
+
+{% block content %}
+    <div class="container-lg flex-grow-1 d-flex align-items-center justify-content-center">
+        <div class="row w-100 justify-content-center">
+            <div class="col-md-6 col-lg-4">
+                <div class="card shadow-lg p-3 rounded">
+                    <div class="card-body p-4">
+                        <h1 class="text-center mb-4">Login</h1>
+                        <form action="/login" method="POST">
+                            <div class="mb-3">
+                                <input class="form-control" type="text" id="username" name="username" placeholder="Username" required autocomplete="off">
+                            </div>
+                            <div class="mb-3">
+                                <input class="form-control" type="password" id="password" name="password" placeholder="Password" required autocomplete="off">
+                            </div>
+                            <button type="submit" class="btn btn-light w-100">Login</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
